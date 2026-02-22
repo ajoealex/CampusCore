@@ -5,27 +5,10 @@ echo "   CampusCore API - Build Executable"
 echo "============================================"
 echo ""
 
-# Check if Node.js is installed
-if ! command -v node &> /dev/null; then
-    echo "ERROR: Node.js is not installed or not in PATH."
-    echo "Please install Node.js from https://nodejs.org/"
-    exit 1
-fi
-
-# Check if npm is installed
-if ! command -v npm &> /dev/null; then
-    echo "ERROR: npm is not installed or not in PATH."
-    exit 1
-fi
-
 # Install dependencies if node_modules doesn't exist
 if [ ! -d "node_modules" ]; then
     echo "Installing dependencies..."
     npm install
-    if [ $? -ne 0 ]; then
-        echo "ERROR: Failed to install dependencies."
-        exit 1
-    fi
     echo ""
 fi
 
@@ -37,33 +20,47 @@ if [ -d "build" ]; then
 fi
 
 # Create build directory structure
-echo "Creating build directory..."
-mkdir -p "build/CampusCore API"
+echo "Creating build directories..."
+mkdir -p "build/CampusCore API/campuscore-win"
+mkdir -p "build/CampusCore API/campuscore-linux"
+mkdir -p "build/CampusCore API/campuscore-macos"
 echo ""
 
-# Run pkg to create executables
+# Run pkg to create executables (to temp location first)
 echo "Building executables with pkg..."
-echo "This may take a few minutes on first run as pkg downloads Node.js binaries..."
+echo "This may take a few minutes on first run..."
 echo ""
-npx pkg . --targets node18-win-x64,node18-linux-x64,node18-macos-x64 --out-path "build/CampusCore API" --compress GZip
-
-if [ $? -ne 0 ]; then
-    echo "ERROR: Build failed."
-    exit 1
-fi
-
-# Copy .env.example as .env to the build folder
+npx pkg . --targets node18-win-x64,node18-linux-x64,node18-macos-x64 --out-path "build/temp" --compress GZip
 echo ""
-echo "Copying configuration files..."
-cp ".env.example" "build/CampusCore API/.env"
 
-# Create app_data directories in build folder
-mkdir -p "build/CampusCore API/app_data/students"
-mkdir -p "build/CampusCore API/app_data/courses"
+# Move executables to their platform folders
+echo "Organizing build output..."
+mv "build/temp/campuscore-win.exe" "build/CampusCore API/campuscore-win/campuscore-win.exe"
+mv "build/temp/campuscore-linux" "build/CampusCore API/campuscore-linux/campuscore-linux"
+mv "build/temp/campuscore-macos" "build/CampusCore API/campuscore-macos/campuscore-macos"
+rmdir "build/temp"
 
 # Make Linux and macOS binaries executable
-chmod +x "build/CampusCore API/campuscore-linux" 2>/dev/null
-chmod +x "build/CampusCore API/campuscore-macos" 2>/dev/null
+chmod +x "build/CampusCore API/campuscore-linux/campuscore-linux"
+chmod +x "build/CampusCore API/campuscore-macos/campuscore-macos"
+
+# Copy .env and create app_data for each platform
+echo "Setting up configuration and data folders..."
+
+# Windows
+cp ".env.example" "build/CampusCore API/campuscore-win/.env"
+mkdir -p "build/CampusCore API/campuscore-win/app_data/students"
+mkdir -p "build/CampusCore API/campuscore-win/app_data/courses"
+
+# Linux
+cp ".env.example" "build/CampusCore API/campuscore-linux/.env"
+mkdir -p "build/CampusCore API/campuscore-linux/app_data/students"
+mkdir -p "build/CampusCore API/campuscore-linux/app_data/courses"
+
+# macOS
+cp ".env.example" "build/CampusCore API/campuscore-macos/.env"
+mkdir -p "build/CampusCore API/campuscore-macos/app_data/students"
+mkdir -p "build/CampusCore API/campuscore-macos/app_data/courses"
 
 echo ""
 echo "============================================"
@@ -72,13 +69,13 @@ echo "============================================"
 echo ""
 echo "Output directory: build/CampusCore API/"
 echo ""
-echo "Files created:"
-ls -la "build/CampusCore API/"
+echo "Platform folders:"
+echo "  campuscore-win/    - Windows executable"
+echo "  campuscore-linux/  - Linux executable"
+echo "  campuscore-macos/  - macOS executable"
 echo ""
-echo "To run the server:"
-echo "  Windows: campuscore.exe"
-echo "  Linux:   ./campuscore-linux"
-echo "  macOS:   ./campuscore-macos"
-echo ""
-echo "Make sure to configure the .env file before running."
+echo "Each folder contains:"
+echo "  - Executable binary"
+echo "  - .env configuration"
+echo "  - app_data/ folder"
 echo ""

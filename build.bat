@@ -12,32 +12,51 @@ if not exist "node_modules" (
     echo.
 )
 
-:: Clean previous build
+:: Clean previous build if it exists
 if exist "build" (
     echo Cleaning previous build...
     rmdir /s /q "build"
-    echo.
 )
-
-:: Create build directory structure
-echo Creating build directory...
-mkdir "build\CampusCore API"
 echo.
 
-:: Run pkg to create executables
+:: Create build directory structure
+echo Creating build directories...
+mkdir "build\CampusCore API\campuscore-win"
+mkdir "build\CampusCore API\campuscore-linux"
+mkdir "build\CampusCore API\campuscore-macos"
+echo.
+
+:: Run pkg to create executables (to temp location first)
 echo Building executables with pkg...
 echo This may take a few minutes on first run...
 echo.
-call npx pkg . --targets node18-win-x64,node18-linux-x64,node18-macos-x64 --out-path "build\CampusCore API" --compress GZip
+call npx pkg . --targets node18-win-x64,node18-linux-x64,node18-macos-x64 --out-path "build\temp" --compress GZip
 echo.
 
-:: Copy .env.example as .env to the build folder
-echo Copying configuration files...
-copy ".env.example" "build\CampusCore API\.env" >nul
+:: Move executables to their platform folders
+echo Organizing build output...
+move "build\temp\campuscore-win.exe" "build\CampusCore API\campuscore-win\campuscore-win.exe" >nul
+move "build\temp\campuscore-linux" "build\CampusCore API\campuscore-linux\campuscore-linux" >nul
+move "build\temp\campuscore-macos" "build\CampusCore API\campuscore-macos\campuscore-macos" >nul
+rmdir "build\temp"
 
-:: Create app_data directories in build folder
-mkdir "build\CampusCore API\app_data\students" 2>nul
-mkdir "build\CampusCore API\app_data\courses" 2>nul
+:: Copy .env and create app_data for each platform
+echo Setting up configuration and data folders...
+
+:: Windows
+copy ".env.example" "build\CampusCore API\campuscore-win\.env" >nul
+mkdir "build\CampusCore API\campuscore-win\app_data\students" 2>nul
+mkdir "build\CampusCore API\campuscore-win\app_data\courses" 2>nul
+
+:: Linux
+copy ".env.example" "build\CampusCore API\campuscore-linux\.env" >nul
+mkdir "build\CampusCore API\campuscore-linux\app_data\students" 2>nul
+mkdir "build\CampusCore API\campuscore-linux\app_data\courses" 2>nul
+
+:: macOS
+copy ".env.example" "build\CampusCore API\campuscore-macos\.env" >nul
+mkdir "build\CampusCore API\campuscore-macos\app_data\students" 2>nul
+mkdir "build\CampusCore API\campuscore-macos\app_data\courses" 2>nul
 
 echo.
 echo ============================================
@@ -46,13 +65,15 @@ echo ============================================
 echo.
 echo Output directory: build\CampusCore API\
 echo.
-echo Files created:
-dir /b "build\CampusCore API"
+echo Platform folders:
+echo   campuscore-win\    - Windows executable
+echo   campuscore-linux\  - Linux executable
+echo   campuscore-macos\  - macOS executable
 echo.
-echo To run the server:
-echo   Windows: campuscore.exe
-echo   Linux:   ./campuscore-linux
-echo   macOS:   ./campuscore-macos
+echo Each folder contains:
+echo   - Executable binary
+echo   - .env configuration
+echo   - app_data\ folder
 echo.
 echo Press any key to close...
 pause >nul

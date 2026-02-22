@@ -57,29 +57,34 @@ chmod +x build.sh
 
 ### Build Output
 
-The build creates a `build/CampusCore API/` folder containing:
+The build creates a `build/CampusCore API/` folder with separate platform folders:
 
 ```
 CampusCore API/
-├── campuscore.exe      # Windows executable
-├── campuscore-linux    # Linux executable
-├── campuscore-macos    # macOS executable
-├── .env                # Configuration file
-└── app_data/           # Data storage folder
-    ├── students/
-    └── courses/
+├── campuscore-win/
+│   ├── campuscore-win.exe
+│   ├── .env
+│   └── app_data/
+├── campuscore-linux/
+│   ├── campuscore-linux
+│   ├── .env
+│   └── app_data/
+└── campuscore-macos/
+    ├── campuscore-macos
+    ├── .env
+    └── app_data/
 ```
 
 ### Running the Executable
 
-1. Navigate to the `build/CampusCore API/` folder
+1. Navigate to the appropriate platform folder (e.g., `campuscore-win/`)
 2. Configure the `.env` file as needed
-3. Run the appropriate executable:
-   - **Windows:** `campuscore.exe`
+3. Run the executable:
+   - **Windows:** `campuscore-win.exe`
    - **Linux:** `./campuscore-linux`
    - **macOS:** `./campuscore-macos`
 
-The executable stores all data in the `app_data/` folder located next to the binary.
+Each platform folder is self-contained and can be distributed independently.
 
 ---
 
