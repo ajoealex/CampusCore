@@ -58,6 +58,13 @@ copy ".env.example" "build\CampusCore API\campuscore-macos\.env" >nul
 mkdir "build\CampusCore API\campuscore-macos\app_data\students" 2>nul
 mkdir "build\CampusCore API\campuscore-macos\app_data\courses" 2>nul
 
+:: Create zip files for each platform
+echo.
+echo Creating zip archives...
+powershell -Command "Compress-Archive -Path 'build\CampusCore API\campuscore-win\*' -DestinationPath 'build\CampusCore API\campuscore-win.zip' -Force"
+powershell -Command "Compress-Archive -Path 'build\CampusCore API\campuscore-linux\*' -DestinationPath 'build\CampusCore API\campuscore-linux.zip' -Force"
+powershell -Command "Compress-Archive -Path 'build\CampusCore API\campuscore-macos\*' -DestinationPath 'build\CampusCore API\campuscore-macos.zip' -Force"
+
 echo.
 echo ============================================
 echo    Build Complete!
@@ -66,14 +73,14 @@ echo.
 echo Output directory: build\CampusCore API\
 echo.
 echo Platform folders:
-echo   campuscore-win\    - Windows executable
-echo   campuscore-linux\  - Linux executable
-echo   campuscore-macos\  - macOS executable
+echo   campuscore-win\      - Windows executable
+echo   campuscore-linux\    - Linux executable
+echo   campuscore-macos\    - macOS executable
 echo.
-echo Each folder contains:
-echo   - Executable binary
-echo   - .env configuration
-echo   - app_data\ folder
+echo Zip archives:
+echo   campuscore-win.zip   - Windows distribution
+echo   campuscore-linux.zip - Linux distribution
+echo   campuscore-macos.zip - macOS distribution
 echo.
 echo Press any key to close...
 pause >nul

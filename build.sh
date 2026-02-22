@@ -12,12 +12,12 @@ if [ ! -d "node_modules" ]; then
     echo ""
 fi
 
-# Clean previous build
+# Clean previous build if it exists
 if [ -d "build" ]; then
     echo "Cleaning previous build..."
     rm -rf "build"
-    echo ""
 fi
+echo ""
 
 # Create build directory structure
 echo "Creating build directories..."
@@ -62,6 +62,15 @@ cp ".env.example" "build/CampusCore API/campuscore-macos/.env"
 mkdir -p "build/CampusCore API/campuscore-macos/app_data/students"
 mkdir -p "build/CampusCore API/campuscore-macos/app_data/courses"
 
+# Create zip files for each platform
+echo ""
+echo "Creating zip archives..."
+cd "build/CampusCore API"
+zip -r "campuscore-win.zip" "campuscore-win" -q
+zip -r "campuscore-linux.zip" "campuscore-linux" -q
+zip -r "campuscore-macos.zip" "campuscore-macos" -q
+cd ../..
+
 echo ""
 echo "============================================"
 echo "   Build Complete!"
@@ -70,12 +79,12 @@ echo ""
 echo "Output directory: build/CampusCore API/"
 echo ""
 echo "Platform folders:"
-echo "  campuscore-win/    - Windows executable"
-echo "  campuscore-linux/  - Linux executable"
-echo "  campuscore-macos/  - macOS executable"
+echo "  campuscore-win/      - Windows executable"
+echo "  campuscore-linux/    - Linux executable"
+echo "  campuscore-macos/    - macOS executable"
 echo ""
-echo "Each folder contains:"
-echo "  - Executable binary"
-echo "  - .env configuration"
-echo "  - app_data/ folder"
+echo "Zip archives:"
+echo "  campuscore-win.zip   - Windows distribution"
+echo "  campuscore-linux.zip - Linux distribution"
+echo "  campuscore-macos.zip - macOS distribution"
 echo ""
