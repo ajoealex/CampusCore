@@ -1,0 +1,4 @@
+node_modules/
+app_data/
+build/
+.claude
