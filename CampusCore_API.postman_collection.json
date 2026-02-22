@@ -1,0 +1,983 @@
+{
+	"info": {
+		"_postman_id": "campuscore-api-collection",
+		"name": "CampusCore API",
+		"description": "Enterprise Training Backend for API Automation\n\nThis collection demonstrates:\n- Payload-based authentication\n- Bearer token extraction and reuse\n- Request chaining\n- CRUD operations\n- Business rule enforcement",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000/api/v1",
+			"type": "string"
+		},
+		{
+			"key": "accessToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "studentId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "courseId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "enrollmentId",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Health Check",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/health",
+							"host": ["{{baseUrl}}"],
+							"path": ["health"]
+						},
+						"description": "Check if the server is running. No authentication required."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login with API Key",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('accessToken', jsonData.accessToken);",
+									"    console.log('Token saved:', jsonData.accessToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"apiKey\": \"TRAINING-12345\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login/apikey",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "login", "apikey"]
+						},
+						"description": "Authenticate using an API key. The access token is automatically saved for subsequent requests."
+					},
+					"response": []
+				},
+				{
+					"name": "Login with Username/Password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('accessToken', jsonData.accessToken);",
+									"    console.log('Token saved:', jsonData.accessToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"trainer\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "login"]
+						},
+						"description": "Authenticate using username and password. The access token is automatically saved for subsequent requests."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Students",
+			"item": [
+				{
+					"name": "Create Student",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('studentId', jsonData.studentId);",
+									"    console.log('Student ID saved:', jsonData.studentId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Rahul\",\n    \"email\": \"rahul@test.com\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/students",
+							"host": ["{{baseUrl}}"],
+							"path": ["students"]
+						},
+						"description": "Create a new student. Email must be unique. Student ID is automatically saved for subsequent requests."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Student",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/students/{{studentId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["students", "{{studentId}}"]
+						},
+						"description": "Retrieve a student's details including their enrollments."
+					},
+					"response": []
+				},
+				{
+					"name": "List Students",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/students?page=1&limit=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["students"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "status",
+									"value": "ACTIVE",
+									"disabled": true
+								}
+							]
+						},
+						"description": "List all students with optional filtering and pagination."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Student",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Rahul Sharma\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/students/{{studentId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["students", "{{studentId}}"]
+						},
+						"description": "Update student details. Allowed fields: name, email, status."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Student",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/students/{{studentId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["students", "{{studentId}}"]
+						},
+						"description": "Delete a student. Cannot delete if enrolled in an active course."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Courses",
+			"item": [
+				{
+					"name": "Create Course",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('courseId', jsonData.courseId);",
+									"    console.log('Course ID saved:', jsonData.courseId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"API Automation\",\n    \"capacity\": 2\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/courses",
+							"host": ["{{baseUrl}}"],
+							"path": ["courses"]
+						},
+						"description": "Create a new course. Course ID is automatically saved for subsequent requests."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Course",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/courses/{{courseId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["courses", "{{courseId}}"]
+						},
+						"description": "Retrieve course details including derived field availableSeats."
+					},
+					"response": []
+				},
+				{
+					"name": "List Courses",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/courses?page=1&limit=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["courses"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "status",
+									"value": "OPEN",
+									"disabled": true
+								}
+							]
+						},
+						"description": "List all courses with optional filtering and pagination."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Course",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Advanced API Automation\",\n    \"capacity\": 5\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/courses/{{courseId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["courses", "{{courseId}}"]
+						},
+						"description": "Update course details. Capacity cannot be less than enrolledCount."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Course",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/courses/{{courseId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["courses", "{{courseId}}"]
+						},
+						"description": "Delete a course. Cannot delete if students are enrolled."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Enrollments",
+			"item": [
+				{
+					"name": "Enroll Student",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('enrollmentId', jsonData.enrollmentId);",
+									"    console.log('Enrollment ID saved:', jsonData.enrollmentId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"studentId\": \"{{studentId}}\",\n    \"courseId\": \"{{courseId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/enrollments",
+							"host": ["{{baseUrl}}"],
+							"path": ["enrollments"]
+						},
+						"description": "Enroll a student in a course. Course must be OPEN with available seats. Student cannot enroll twice."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Enrollment",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/enrollments/{{enrollmentId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["enrollments", "{{enrollmentId}}"]
+						},
+						"description": "Retrieve enrollment details."
+					},
+					"response": []
+				},
+				{
+					"name": "List Enrollments",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/enrollments",
+							"host": ["{{baseUrl}}"],
+							"path": ["enrollments"],
+							"query": [
+								{
+									"key": "studentId",
+									"value": "{{studentId}}",
+									"disabled": true
+								},
+								{
+									"key": "courseId",
+									"value": "{{courseId}}",
+									"disabled": true
+								},
+								{
+									"key": "status",
+									"value": "CONFIRMED",
+									"disabled": true
+								}
+							]
+						},
+						"description": "List enrollments with optional filtering."
+					},
+					"response": []
+				},
+				{
+					"name": "Cancel Enrollment",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/enrollments/{{enrollmentId}}/cancel",
+							"host": ["{{baseUrl}}"],
+							"path": ["enrollments", "{{enrollmentId}}", "cancel"]
+						},
+						"description": "Cancel an enrollment. The seat is restored to the course."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "End-to-End Flow",
+			"item": [
+				{
+					"name": "1. Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Login successful', function() {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('accessToken', jsonData.accessToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"trainer\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "login"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Create Student",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Student created', function() {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('studentId', jsonData.studentId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Generate unique email",
+									"var timestamp = Date.now();",
+									"pm.variables.set('uniqueEmail', 'student' + timestamp + '@test.com');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test Student\",\n    \"email\": \"{{uniqueEmail}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/students",
+							"host": ["{{baseUrl}}"],
+							"path": ["students"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Create Course",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Course created', function() {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('courseId', jsonData.courseId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Test Course\",\n    \"capacity\": 2\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/courses",
+							"host": ["{{baseUrl}}"],
+							"path": ["courses"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4. Get Course (Initial State)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Course retrieved', function() {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Available seats equals capacity', function() {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.availableSeats).to.eql(jsonData.capacity);",
+									"    pm.expect(jsonData.enrolledCount).to.eql(0);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/courses/{{courseId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["courses", "{{courseId}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5. Enroll Student",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Enrollment successful', function() {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('enrollmentId', jsonData.enrollmentId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"studentId\": \"{{studentId}}\",\n    \"courseId\": \"{{courseId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/enrollments",
+							"host": ["{{baseUrl}}"],
+							"path": ["enrollments"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "6. Validate Seat Reduction",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Seat reduced after enrollment', function() {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.enrolledCount).to.eql(1);",
+									"    pm.expect(jsonData.availableSeats).to.eql(jsonData.capacity - 1);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/courses/{{courseId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["courses", "{{courseId}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "7. Duplicate Enrollment (Expect Error)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Duplicate enrollment rejected', function() {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test('Error message indicates already enrolled', function() {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.error).to.include('already enrolled');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"studentId\": \"{{studentId}}\",\n    \"courseId\": \"{{courseId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/enrollments",
+							"host": ["{{baseUrl}}"],
+							"path": ["enrollments"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "8. Cancel Enrollment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Enrollment cancelled', function() {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Status is CANCELLED', function() {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.status).to.eql('CANCELLED');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/enrollments/{{enrollmentId}}/cancel",
+							"host": ["{{baseUrl}}"],
+							"path": ["enrollments", "{{enrollmentId}}", "cancel"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "9. Validate Seat Restoration",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Seat restored after cancellation', function() {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.enrolledCount).to.eql(0);",
+									"    pm.expect(jsonData.availableSeats).to.eql(jsonData.capacity);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/courses/{{courseId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["courses", "{{courseId}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "10. Delete Student",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Student deleted', function() {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/students/{{studentId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["students", "{{studentId}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "11. Delete Course",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Course deleted', function() {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/courses/{{courseId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["courses", "{{courseId}}"]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
